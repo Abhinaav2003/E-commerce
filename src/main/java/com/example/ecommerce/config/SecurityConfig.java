@@ -1,31 +1,59 @@
 package com.example.ecommerce.config;
 
-import com.example.ecommerce.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 @Configuration
+@EnableWebSecurity
 public class SecurityConfig {
+
     @Bean
-    PasswordEncoder passwordEncoder() {
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /** Admins go to /admin after login, everyone else goes to the shop. */
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http,
-            CustomUserDetailsService userDetailsService) throws Exception {
-        http.userDetailsService(userDetailsService)
+    public AuthenticationSuccessHandler loginSuccessHandler() {
+        return (request, response, authentication) -> {
+            boolean isAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+            response.sendRedirect(isAdmin ? "/admin" : "/");
+        };
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http,
+                                           AuthenticationSuccessHandler loginSuccessHandler) throws Exception {
+        http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/register", "/login", "/css/**", "/js/**").permitAll()
+                .requestMatchers("/css/**", "/js/**", "/images/**", "/error").permitAll()
+                .requestMatchers("/", "/login", "/register").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/cart/**", "/checkout", "/orders/**").authenticated()
-                .anyRequest().permitAll())
-            .formLogin(form -> form.loginPage("/login").defaultSuccessUrl("/", true).permitAll())
-            .logout(logout -> logout.logoutSuccessUrl("/").permitAll());
+                .requestMatchers("/cart/**", "/orders/**", "/checkout").authenticated()
+                .anyRequest().permitAll()
+            )
+            .formLogin(form -> form
+                .loginPage("/login")
+                .loginProcessingUrl("/login")
+                .usernameParameter("username")   // matches the login.html field name
+                .passwordParameter("password")
+                .successHandler(loginSuccessHandler)
+                .failureUrl("/login?error")
+                .permitAll()
+            )
+            .logout(logout -> logout
+                .logoutUrl("/logout")            // POST, matches the Logout button
+                .logoutSuccessUrl("/login?logout")
+                .permitAll()
+            );
+        // CSRF stays enabled; Thymeleaf th:action adds the token to every form.
         return http.build();
     }
 }
