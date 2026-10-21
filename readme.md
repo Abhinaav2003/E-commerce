@@ -1,9 +1,8 @@
 # Cheetah
 
-![Thymeleaf](https://img.shields.io/badge/Thymeleaf-templates-005F0F)
-![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-7952B3)
-![Mobile first](https://img.shields.io/badge/responsive-mobile--first-0f766e)
-![License: MIT](https://img.shields.io/badge/license-MIT-blue)
+<p align="center">
+  <img src="https://skillicons.dev/icons?i=java,spring,hibernate,postgres,maven" alt="Tech stack icons" />
+</p>
 
 **Cheetah** is a fast, mobile-first online store. Customers can browse and search products, manage a cart, place orders and review their order history. Admins can add, edit and delete products. This repository contains the complete user interface: eight server-rendered Thymeleaf pages with a shared, responsive design.
 
