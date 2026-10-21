@@ -1,4 +1,4 @@
-# Cheetah
+<h1 align="center">Online Exam System</h1>
 
 <p align="center">
   <img src="https://skillicons.dev/icons?i=java,spring,hibernate,postgres,maven" alt="Tech stack icons" />
