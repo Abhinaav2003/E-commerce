@@ -1,9 +1,137 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>My Orders | ShopEase</title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"><link rel="stylesheet" th:href="@{/css/style.css}"></head>
-<body><div class="container py-5"><h1 class="mb-4">My Orders</h1>
-<div th:if="${#lists.isEmpty(orders)}" class="alert alert-info">You haven't placed any orders yet. <a href="/">Start shopping</a></div>
-<div class="card shadow-sm mb-3" th:each="order : ${orders}"><div class="card-body"><h5>Order #<span th:text="${order.id}"></span></h5>
-<p><strong>Date:</strong> <span th:text="${order.createdAt}"></span></p><p><strong>Items:</strong> <span th:text="${order.itemsSummary}"></span></p>
-<h5>Total: ₹<span th:text="${order.total}"></span></h5><span class="badge text-bg-success">Placed</span></div></div>
-<a href="/" class="btn btn-primary">Continue Shopping</a></div></body></html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Orders | Cheetah</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+:root {
+  --ink: #17212b;
+  --paper: #f5f7f8;
+  --card: #fff;
+  --line: #e3e8ec;
+  --muted: #5d6b79;
+  --brand: #0f766e;
+  --brand-dark: #0b5c56;
+  --accent: #ffb703;
+  --radius: 14px;
+}
+body {
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+main { flex: 1; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+a { color: var(--brand); }
+
+/* Nav */
+.site-nav { background: var(--ink); padding-block: .7rem; }
+.site-nav .navbar-brand { color: #fff; font-weight: 800; font-size: 1.35rem; letter-spacing: -.02em; }
+.site-nav .navbar-brand span { color: var(--accent); }
+.site-nav .nav-link-lite { color: #d5dde4; text-decoration: none; font-weight: 500; font-size: .95rem; }
+.site-nav .nav-link-lite:hover { color: #fff; }
+
+.btn { font-weight: 600; border-radius: 10px; }
+.btn-primary { background: var(--brand); border-color: var(--brand); }
+.btn-primary:hover, .btn-primary:focus { background: var(--brand-dark); border-color: var(--brand-dark); }
+
+.page-title { font-weight: 800; letter-spacing: -.02em; font-size: clamp(1.5rem, 4.5vw, 2rem); }
+.orders-wrap { max-width: 820px; }
+
+/* Order card */
+.order-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.15rem;
+}
+.order-card + .order-card { margin-top: .85rem; }
+.order-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: .75rem; flex-wrap: wrap;
+}
+.order-id { font-weight: 700; font-size: 1.1rem; margin: 0; }
+.status {
+  display: inline-block; font-size: .78rem; font-weight: 700;
+  padding: .3em .7em; border-radius: 999px;
+  background: #dcf3ef; color: #0b5c56;
+}
+.order-date { color: var(--muted); font-size: .9rem; margin: .2rem 0 0; }
+.order-items {
+  margin: .9rem 0 0; padding-top: .9rem; border-top: 1px solid var(--line);
+  line-height: 1.55; overflow-wrap: anywhere;
+}
+.order-items .lbl { display: block; color: var(--muted); font-size: .8rem; font-weight: 500; margin-bottom: .15rem; }
+.order-foot {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-top: .9rem; padding-top: .9rem; border-top: 1px solid var(--line);
+}
+.order-foot .lbl { color: var(--muted); font-weight: 500; }
+.order-total { font-weight: 800; font-size: 1.3rem; letter-spacing: -.01em; }
+
+/* Empty state */
+.empty-state {
+  text-align: center; background: var(--card); border: 1px dashed #c8d1d8;
+  border-radius: var(--radius); padding: 3rem 1.25rem;
+}
+.empty-state h2 { font-weight: 700; font-size: 1.3rem; }
+.empty-state p { color: var(--muted); }
+
+.site-footer { background: var(--ink); color: #b9c5d0; padding: 1.25rem 1rem; font-size: .9rem; text-align: center; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container d-flex align-items-center justify-content-between">
+    <a class="navbar-brand" href="/">Chee<span>tah</span></a>
+    <div class="d-flex gap-3">
+      <a class="nav-link-lite" href="/cart">Cart</a>
+      <a class="nav-link-lite" href="/">Shop</a>
+    </div>
+  </div>
+</nav>
+
+<main class="container orders-wrap py-4 py-md-5">
+  <h1 class="page-title mb-3 mb-md-4">My orders</h1>
+
+  <div class="empty-state" th:if="${#lists.isEmpty(orders)}">
+    <h2>No orders yet</h2>
+    <p>Orders you place will show up here.</p>
+    <a class="btn btn-primary" href="/">Start shopping</a>
+  </div>
+
+  <article class="order-card" th:each="order : ${orders}">
+    <div class="order-head">
+      <div>
+        <h2 class="order-id">Order #<span th:text="${order.id}">1</span></h2>
+        <p class="order-date" th:text="${order.createdAt}">Date</p>
+      </div>
+      <span class="status">Placed</span>
+    </div>
+
+    <p class="order-items">
+      <span class="lbl">Items</span>
+      <span th:text="${order.itemsSummary}">Items summary</span>
+    </p>
+
+    <div class="order-foot">
+      <span class="lbl">Total</span>
+      <span class="order-total">₹<span th:text="${#numbers.formatDecimal(order.total, 0, 'COMMA', 2, 'POINT')}">0.00</span></span>
+    </div>
+  </article>
+
+  <a href="/" class="btn btn-primary mt-4" th:unless="${#lists.isEmpty(orders)}">Continue shopping</a>
+</main>
+
+<footer class="site-footer">Cheetah © 2026 — Online shopping made simple</footer>
+</body>
+</html>
