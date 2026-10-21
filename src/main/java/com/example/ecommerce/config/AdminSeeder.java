@@ -16,7 +16,9 @@ import java.util.Optional;
  * Makes sure an admin account exists on startup.
  *
  * Configure it with the ADMIN_EMAIL and ADMIN_PASSWORD environment variables.
- * If ADMIN_PASSWORD is not set, a random password is generated and printed once in the log.
+ * The default password is Admin@12345 (see application.properties). On every startup the admin
+ * account is created if missing, and its password is reset to the configured value if it differs,
+ * so the value in ADMIN_PASSWORD is always the one that works.
  */
 @Component
 public class AdminSeeder implements CommandLineRunner {
@@ -33,7 +35,7 @@ public class AdminSeeder implements CommandLineRunner {
     public AdminSeeder(UserRepository users,
                        PasswordEncoder encoder,
                        @Value("${app.admin.email:admin@cheetah.com}") String adminEmail,
-                       @Value("${app.admin.password:}") String adminPassword) {
+                       @Value("${app.admin.password:Admin@12345}") String adminPassword) {
         this.users = users;
         this.encoder = encoder;
         this.adminEmail = adminEmail;
@@ -47,10 +49,20 @@ public class AdminSeeder implements CommandLineRunner {
 
         if (existing.isPresent()) {
             AppUser user = existing.get();
+            boolean changed = false;
             if (!ADMIN_ROLE.equals(user.getRole())) {
                 user.setRole(ADMIN_ROLE);
-                users.save(user);
+                changed = true;
                 log.info("Existing account {} was promoted to admin.", email);
+            }
+            if (adminPassword != null && !adminPassword.isBlank()
+                    && !encoder.matches(adminPassword, user.getPassword())) {
+                user.setPassword(encoder.encode(adminPassword));
+                changed = true;
+                log.info("Admin password for {} was synced with the configured value.", email);
+            }
+            if (changed) {
+                users.save(user);
             }
             return;
         }

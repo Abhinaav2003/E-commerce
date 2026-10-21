@@ -133,6 +133,13 @@ Colours are CSS variables at the top of each page:
 
 To rebrand, change the variables and the `Chee<span>tah</span>` wordmark in each page (search for `navbar-brand` and `auth-brand`).
 
+## Admin login
+
+- URL: `/admin/login` (password only)
+- Default password: `Admin------` (account `admin@cheetah.com`)
+- Change it by setting the `ADMIN_PASSWORD` environment variable (and `ADMIN_EMAIL` if needed). The password is re-synced on every startup.
+- **Change the default before deploying publicly.**
+
 ## Notes
 
 - Prices are formatted with `#numbers.formatDecimal`, so `price`, `subtotal` and `total` must be numeric.
