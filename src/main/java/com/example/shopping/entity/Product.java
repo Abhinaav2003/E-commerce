@@ -1,10 +1,11 @@
-package com.example.ecommerce.model;
+package com.example.shopping.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+
 import java.math.BigDecimal;
 
 @Entity
@@ -14,44 +15,39 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
-    @Column(nullable = false)
+    @NotBlank(message = "Product name is required")
+    @Column(nullable = false, length = 120)
     private String name;
 
-    @Column(length = 2000)
+    @Column(length = 500)
     private String description;
 
-    @NotNull
-    @DecimalMin("0.01")
-    @Column(nullable = false, precision = 12, scale = 2)
+    @NotNull(message = "Price is required")
+    @DecimalMin(value = "0.01", message = "Price must be greater than zero")
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
-    private String imageUrl;
-
-    @Min(0)
+    @NotNull(message = "Quantity is required")
+    @Min(value = 0, message = "Quantity cannot be negative")
     @Column(nullable = false)
-    private int stock;
+    private Integer quantity;
 
     public Product() {}
 
-    public Product(String name, String description, BigDecimal price, String imageUrl, int stock) {
+    public Product(String name, String description, BigDecimal price, Integer quantity) {
         this.name = name;
         this.description = description;
         this.price = price;
-        this.imageUrl = imageUrl;
-        this.stock = stock;
+        this.quantity = quantity;
     }
 
     public Long getId() { return id; }
     public String getName() { return name; }
-    public String getDescription() { return description; }
-    public BigDecimal getPrice() { return price; }
-    public String getImageUrl() { return imageUrl; }
-    public int getStock() { return stock; }
-    public void setId(Long id) { this.id = id; }
     public void setName(String name) { this.name = name; }
+    public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+    public BigDecimal getPrice() { return price; }
     public void setPrice(BigDecimal price) { this.price = price; }
-    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
-    public void setStock(int stock) { this.stock = stock; }
+    public Integer getQuantity() { return quantity; }
+    public void setQuantity(Integer quantity) { this.quantity = quantity; }
 }
