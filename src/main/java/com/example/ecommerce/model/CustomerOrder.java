@@ -23,6 +23,10 @@ public class CustomerOrder {
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    /** PLACED, SHIPPED, DELIVERED or CANCELLED. Older rows without a value count as PLACED. */
+    @Column(length = 20)
+    private String status = "PLACED";
+
     protected CustomerOrder() {}
     public CustomerOrder(String customerEmail, String itemsSummary, BigDecimal total) {
         this.customerEmail = customerEmail;
@@ -34,4 +38,6 @@ public class CustomerOrder {
     public String getItemsSummary() { return itemsSummary; }
     public BigDecimal getTotal() { return total; }
     public LocalDateTime getCreatedAt() { return createdAt; }
+    public String getStatus() { return status == null || status.isBlank() ? "PLACED" : status; }
+    public void setStatus(String status) { this.status = status; }
 }

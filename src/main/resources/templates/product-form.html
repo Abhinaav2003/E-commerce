@@ -81,6 +81,7 @@ a { color: var(--brand); }
 @media (min-width: 576px) { .actions { flex-direction: row; } }
 
 .site-footer { background: var(--ink); color: #b9c5d0; padding: 1.25rem 1rem; font-size: .9rem; text-align: center; }
+.logout { background:none; border:0; padding:0; font:inherit; cursor:pointer; }
 </style>
 </head>
 <body>
@@ -89,8 +90,11 @@ a { color: var(--brand); }
   <div class="container d-flex align-items-center justify-content-between">
     <a class="navbar-brand" href="/">Chee<span>tah</span></a>
     <div class="d-flex gap-3">
+      <a class="nav-link-lite" href="/admin">Dashboard</a>
       <a class="nav-link-lite" href="/admin/products">Products</a>
+      <a class="nav-link-lite" href="/admin/orders">Orders</a>
       <a class="nav-link-lite" href="/">Shop</a>
+      <form th:action="@{/logout}" method="post" class="m-0"><button class="nav-link-lite logout" type="submit">Log out</button></form>
     </div>
   </div>
 </nav>
@@ -99,7 +103,7 @@ a { color: var(--brand); }
   <a class="back-link" href="/admin/products">&larr; Back to products</a>
   <h1 class="page-title mt-2 mb-3 mb-md-4" th:text="${formTitle}">Add product</h1>
 
-  <form class="form-card" th:object="${product}"
+  <form class="form-card" enctype="multipart/form-data" th:object="${product}"
         th:action="${product.id == null} ? @{/admin/products} : @{/admin/products/{id}(id=${product.id})}"
         method="post">
 
@@ -131,12 +135,24 @@ a { color: var(--brand); }
         <div class="field-error" th:errors="*{stock}"></div>
       </div>
     </div>
+    <div class="mb-3">
+      <label class="form-label" for="image">Product image</label>
+      <input class="form-control" type="file" id="image" name="image" accept="image/jpeg,image/png,image/webp,image/gif">
+      <div class="form-text">JPG, PNG, WebP or GIF, up to 2 MB. A square image works best.</div>
+      <div class="field-error" th:if="${imageError}" th:text="${imageError}"></div>
+      <img class="preview" id="preview" alt="Image preview" th:src="${product.imageUrl}"
+           th:classappend="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)} ? 'show'">
+    </div>
 
-    <div class="mb-2">
-      <label class="form-label" for="imageUrl">Image URL</label>
-      <input class="form-control" type="url" inputmode="url" th:field="*{imageUrl}" placeholder="https://…">
-      <div class="form-text">Optional. A square image works best.</div>
-      <img class="preview" id="preview" alt="Image preview">
+    <div class="mb-3">
+      <label class="form-label" for="imageLink">Or paste an image link</label>
+      <input class="form-control" type="url" id="imageLink" name="imageLink" inputmode="url" placeholder="https://…"
+             th:value="${product.imageUrl != null and !#strings.startsWith(product.imageUrl, '/products/')} ? ${product.imageUrl}">
+    </div>
+
+    <div class="form-check mb-2" th:if="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)}">
+      <input class="form-check-input" type="checkbox" id="removeImage" name="removeImage" value="true">
+      <label class="form-check-label" for="removeImage">Remove current image</label>
     </div>
 
     <div class="actions">
@@ -149,18 +165,31 @@ a { color: var(--brand); }
 <footer class="site-footer">Cheetah © 2026 — Online shopping made simple</footer>
 
 <script>
-  const input = document.getElementById('imageUrl');
+  const fileInput = document.getElementById('image');
+  const linkInput = document.getElementById('imageLink');
   const img = document.getElementById('preview');
-  function updatePreview() {
-    const url = input.value.trim();
-    if (!url) { img.classList.remove('show'); return; }
+
+  fileInput.addEventListener('change', () => {
+    const f = fileInput.files[0];
+    if (!f) return;
+    if (f.size > 2 * 1024 * 1024) {
+      alert('That image is larger than 2 MB. Please choose a smaller one.');
+      fileInput.value = '';
+      return;
+    }
+    img.onload = null; img.onerror = null;
+    img.src = URL.createObjectURL(f);
+    img.classList.add('show');
+  });
+
+  linkInput.addEventListener('change', () => {
+    if (fileInput.files.length) return;
+    const url = linkInput.value.trim();
+    if (!url) return;
     img.onload = () => img.classList.add('show');
     img.onerror = () => img.classList.remove('show');
     img.src = url;
-  }
-  input.addEventListener('change', updatePreview);
-  input.addEventListener('blur', updatePreview);
-  updatePreview();
+  });
 </script>
 </body>
 </html>

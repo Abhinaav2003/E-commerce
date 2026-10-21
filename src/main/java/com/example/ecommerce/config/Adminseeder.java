@@ -9,14 +9,21 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.security.SecureRandom;
+import java.util.Optional;
+
 /**
- * Creates the first admin account on startup.
- * Set app.admin.email and app.admin.password (see README); nothing is created if the password is empty.
+ * Makes sure an admin account exists on startup.
+ *
+ * Configure it with the ADMIN_EMAIL and ADMIN_PASSWORD environment variables.
+ * If ADMIN_PASSWORD is not set, a random password is generated and printed once in the log.
  */
 @Component
 public class AdminSeeder implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(AdminSeeder.class);
+    private static final String ADMIN_ROLE = "ROLE_ADMIN";
+    private static final String ALPHABET = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
     private final UserRepository users;
     private final PasswordEncoder encoder;
@@ -35,13 +42,40 @@ public class AdminSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (adminPassword.isBlank()) {
-            log.warn("app.admin.password is not set, so no admin account was created.");
+        String email = adminEmail.trim().toLowerCase();
+        Optional<AppUser> existing = users.findByEmail(email);
+
+        if (existing.isPresent()) {
+            AppUser user = existing.get();
+            if (!ADMIN_ROLE.equals(user.getRole())) {
+                user.setRole(ADMIN_ROLE);
+                users.save(user);
+                log.info("Existing account {} was promoted to admin.", email);
+            }
             return;
         }
-        if (!users.existsByEmail(adminEmail)) {
-            users.save(new AppUser(adminEmail, encoder.encode(adminPassword), "ROLE_ADMIN"));
-            log.info("Created admin account {}", adminEmail);
+
+        boolean generated = adminPassword == null || adminPassword.isBlank();
+        String password = generated ? randomPassword() : adminPassword;
+        users.save(new AppUser(email, encoder.encode(password), ADMIN_ROLE));
+
+        if (generated) {
+            log.warn("==========================================================");
+            log.warn(" Admin account created: {}", email);
+            log.warn(" Generated password:     {}", password);
+            log.warn(" Set ADMIN_PASSWORD to choose your own. Shown only once.");
+            log.warn("==========================================================");
+        } else {
+            log.info("Admin account created: {}", email);
         }
+    }
+
+    private static String randomPassword() {
+        SecureRandom random = new SecureRandom();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 16; i++) {
+            sb.append(ALPHABET.charAt(random.nextInt(ALPHABET.length())));
+        }
+        return sb.toString();
     }
 }

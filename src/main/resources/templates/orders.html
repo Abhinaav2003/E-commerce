@@ -64,6 +64,9 @@ a { color: var(--brand); }
   padding: .3em .7em; border-radius: 999px;
   background: #dcf3ef; color: #0b5c56;
 }
+.status.st-shipped { background:#e0ecff; color:#1d4ed8; }
+.status.st-delivered { background:#dcfce7; color:#166534; }
+.status.st-cancelled { background:#fde4e0; color:#b42318; }
 .order-date { color: var(--muted); font-size: .9rem; margin: .2rem 0 0; }
 .order-items {
   margin: .9rem 0 0; padding-top: .9rem; border-top: 1px solid var(--line);
@@ -115,7 +118,7 @@ a { color: var(--brand); }
         <h2 class="order-id">Order #<span th:text="${order.id}">1</span></h2>
         <p class="order-date" th:text="${order.createdAt}">Date</p>
       </div>
-      <span class="status">Placed</span>
+      <span class="status" th:classappend="'st-' + ${#strings.toLowerCase(order.status)}" th:text="${#strings.capitalize(#strings.toLowerCase(order.status))}">Placed</span>
     </div>
 
     <p class="order-items">

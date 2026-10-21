@@ -48,6 +48,7 @@ a { color:var(--brand); }
 .list-row .t { font-weight:600; }
 .list-row .s { color:var(--muted); font-size:.85rem; }
 .right { text-align:right; white-space:nowrap; }
+.logout { background:none; border:0; padding:0; font:inherit; cursor:pointer; }
 </style>
 </head>
 <body>
@@ -59,6 +60,7 @@ a { color:var(--brand); }
       <a class="nav-link-lite" href="/admin/products">Products</a>
       <a class="nav-link-lite" href="/admin/orders">Orders</a>
       <a class="nav-link-lite" href="/">Shop</a>
+      <form th:action="@{/logout}" method="post" class="m-0"><button class="nav-link-lite logout" type="submit">Log out</button></form>
     </div>
   </div>
 </nav>
@@ -90,7 +92,7 @@ a { color:var(--brand); }
           <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/products/{id}/edit(id=${p.id})}">Restock</a>
         </div>
       </section>
-    </div>                  
+    </div>
     <div class="col-lg-6">
       <section class="panel h-100">
         <h2>Recent orders</h2>

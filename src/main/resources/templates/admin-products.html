@@ -113,6 +113,7 @@ a { color: var(--brand); }
 .empty-state p { color: var(--muted); }
 
 .site-footer { background: var(--ink); color: #b9c5d0; padding: 1.25rem 1rem; font-size: .9rem; text-align: center; }
+.logout { background:none; border:0; padding:0; font:inherit; cursor:pointer; }
 </style>
 </head>
 <body>
@@ -121,8 +122,10 @@ a { color: var(--brand); }
   <div class="container d-flex align-items-center justify-content-between">
     <a class="navbar-brand" href="/">Chee<span>tah</span></a>
     <div class="d-flex gap-3">
-      <a class="nav-link-lite" href="/orders">Orders</a>
+      <a class="nav-link-lite" href="/admin">Dashboard</a>
+      <a class="nav-link-lite" href="/admin/orders">Orders</a>
       <a class="nav-link-lite" href="/">Shop</a>
+      <form th:action="@{/logout}" method="post" class="m-0"><button class="nav-link-lite logout" type="submit">Log out</button></form>
     </div>
   </div>
 </nav>
@@ -135,6 +138,7 @@ a { color: var(--brand); }
     <a class="btn btn-primary" href="/admin/products/new">Add product</a>
   </div>
 
+  <div class="alert alert-warning" role="alert" th:if="${param.tooLarge}">That image is larger than 2 MB. Please choose a smaller one.</div>
   <div class="empty-state" th:if="${#lists.isEmpty(products)}">
     <h2>No products yet</h2>
     <p>Add your first product to start selling.</p>
