@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title th:text="${formTitle} + ' | Cheetah'">Product form | Cheetah</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+:root {
+  --ink: #17212b;
+  --paper: #f5f7f8;
+  --card: #fff;
+  --line: #e3e8ec;
+  --muted: #5d6b79;
+  --brand: #0f766e;
+  --brand-dark: #0b5c56;
+  --accent: #ffb703;
+  --danger: #b42318;
+  --radius: 14px;
+}
+body {
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+main { flex: 1; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+a { color: var(--brand); }
+
+/* Nav */
+.site-nav { background: var(--ink); padding-block: .7rem; }
+.site-nav .navbar-brand { color: #fff; font-weight: 800; font-size: 1.35rem; letter-spacing: -.02em; }
+.site-nav .navbar-brand span { color: var(--accent); }
+.site-nav .nav-link-lite { color: #d5dde4; text-decoration: none; font-weight: 500; font-size: .95rem; }
+.site-nav .nav-link-lite:hover { color: #fff; }
+
+.form-wrap { max-width: 720px; }
+.page-title { font-weight: 800; letter-spacing: -.02em; font-size: clamp(1.5rem, 4.5vw, 2rem); }
+.back-link { font-size: .92rem; text-decoration: none; font-weight: 600; }
+
+.form-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+}
+@media (min-width: 576px) { .form-card { padding: 2rem; } }
+
+.form-label { font-weight: 600; font-size: .9rem; margin-bottom: .35rem; }
+.form-control, .input-group-text {
+  font-size: 1rem; /* 16px stops iOS zoom on focus */
+  border-color: #cfd8df;
+}
+.form-control { padding: .7rem .85rem; border-radius: 10px; }
+.input-group > .form-control { border-radius: 0 10px 10px 0; }
+.input-group-text { border-radius: 10px 0 0 10px; background: #eef2f4; color: var(--muted); font-weight: 600; }
+.form-control:focus { border-color: var(--brand); box-shadow: 0 0 0 .2rem rgba(15,118,110,.18); }
+.form-control.is-invalid { border-color: var(--danger); background-image: none; }
+.field-error { color: var(--danger); font-size: .85rem; margin-top: .3rem; }
+.form-text { color: var(--muted); font-size: .82rem; }
+
+/* Image preview */
+.preview {
+  width: 100%; max-width: 220px; aspect-ratio: 1 / 1; margin-top: .75rem;
+  border-radius: 12px; border: 1px solid var(--line); background: #e9eef1;
+  object-fit: cover; display: none;
+}
+.preview.show { display: block; }
+
+/* Buttons */
+.btn { font-weight: 600; border-radius: 10px; padding: .7rem 1.25rem; }
+.btn-primary { background: var(--brand); border-color: var(--brand); }
+.btn-primary:hover, .btn-primary:focus { background: var(--brand-dark); border-color: var(--brand-dark); }
+.actions { display: flex; flex-direction: column-reverse; gap: .6rem; margin-top: 1.75rem; }
+@media (min-width: 576px) { .actions { flex-direction: row; } }
+
+.site-footer { background: var(--ink); color: #b9c5d0; padding: 1.25rem 1rem; font-size: .9rem; text-align: center; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container d-flex align-items-center justify-content-between">
+    <a class="navbar-brand" href="/">Chee<span>tah</span></a>
+    <div class="d-flex gap-3">
+      <a class="nav-link-lite" href="/admin/products">Products</a>
+      <a class="nav-link-lite" href="/">Shop</a>
+    </div>
+  </div>
+</nav>
+
+<main class="container form-wrap py-4 py-md-5">
+  <a class="back-link" href="/admin/products">&larr; Back to products</a>
+  <h1 class="page-title mt-2 mb-3 mb-md-4" th:text="${formTitle}">Add product</h1>
+
+  <form class="form-card" th:object="${product}"
+        th:action="${product.id == null} ? @{/admin/products} : @{/admin/products/{id}(id=${product.id})}"
+        method="post">
+
+    <div class="mb-3">
+      <label class="form-label" for="name">Name</label>
+      <input class="form-control" th:field="*{name}" th:errorclass="is-invalid" required autofocus>
+      <div class="field-error" th:errors="*{name}"></div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label" for="description">Description</label>
+      <textarea class="form-control" th:field="*{description}" rows="4"></textarea>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-sm-6">
+        <label class="form-label" for="price">Price</label>
+        <div class="input-group">
+          <span class="input-group-text">₹</span>
+          <input class="form-control" type="number" inputmode="decimal" min="0.01" step="0.01"
+                 th:field="*{price}" th:errorclass="is-invalid" required>
+        </div>
+        <div class="field-error" th:errors="*{price}"></div>
+      </div>
+      <div class="col-sm-6">
+        <label class="form-label" for="stock">Stock</label>
+        <input class="form-control" type="number" inputmode="numeric" min="0"
+               th:field="*{stock}" th:errorclass="is-invalid" required>
+        <div class="field-error" th:errors="*{stock}"></div>
+      </div>
+    </div>
+
+    <div class="mb-2">
+      <label class="form-label" for="imageUrl">Image URL</label>
+      <input class="form-control" type="url" inputmode="url" th:field="*{imageUrl}" placeholder="https://…">
+      <div class="form-text">Optional. A square image works best.</div>
+      <img class="preview" id="preview" alt="Image preview">
+    </div>
+
+    <div class="actions">
+      <a href="/admin/products" class="btn btn-outline-secondary">Cancel</a>
+      <button class="btn btn-primary" type="submit">Save product</button>
+    </div>
+  </form>
+</main>
+
+<footer class="site-footer">Cheetah © 2026 — Online shopping made simple</footer>
+
+<script>
+  const input = document.getElementById('imageUrl');
+  const img = document.getElementById('preview');
+  function updatePreview() {
+    const url = input.value.trim();
+    if (!url) { img.classList.remove('show'); return; }
+    img.onload = () => img.classList.add('show');
+    img.onerror = () => img.classList.remove('show');
+    img.src = url;
+  }
+  input.addEventListener('change', updatePreview);
+  input.addEventListener('blur', updatePreview);
+  updatePreview();
+</script>
+</body>
+</html>
